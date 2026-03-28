@@ -37,7 +37,17 @@
             --text-muted: #a0aec0;
             --radius-xl: 24px;
             --radius-lg: 16px;
-            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-sidebar: rgba(255, 255, 255, 0.95);
+            --border-soft: rgba(0, 0, 0, 0.08);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary-glow: rgba(99, 102, 241, 0.15);
         }
 
         body {
@@ -149,7 +159,7 @@
         /* Top Navbar */
         .navbar-top {
             height: 80px;
-            background: rgba(2, 6, 23, 0.85);
+            background: var(--bg-body);
             backdrop-filter: blur(15px);
             border-bottom: 1px solid var(--border-soft);
             display: flex; align-items: center; justify-content: space-between;
@@ -338,14 +348,14 @@
         .select2-search,
         .select2-search__field,
         .select2-results__option {
-            background-color: #0f172a !important; /* Biru Gelap kawan */
-            color: #ffffff !important;
+            background-color: var(--bg-card) !important;
+            color: var(--text-main) !important;
         }
 
         .select2-dropdown {
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid var(--border-soft) !important;
             border-radius: 12px !important;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8) !important;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
             z-index: 9999 !important;
             margin-top: 5px;
             overflow: hidden !important;
@@ -433,6 +443,11 @@
                             {{ $header_actions }}
                         </div>
                     @endif
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="btn btn-link text-white p-2 glass-panel d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i id="theme-toggle-icon" class="bi bi-moon-stars-fill text-warning"></i>
+                    </button>
                     
                     <div class="d-flex align-items-center gap-4">
                         <div class="text-end d-none d-sm-block">
@@ -482,6 +497,34 @@
     </script>
 
     <script>
+        // Theme Management Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-toggle-icon');
+        const html = document.documentElement;
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        html.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+
+        themeToggle?.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        function updateThemeIcon(theme) {
+            if (theme === 'light') {
+                themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+                themeIcon.classList.replace('text-warning', 'text-warning');
+            } else {
+                themeIcon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
+            }
+        }
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')

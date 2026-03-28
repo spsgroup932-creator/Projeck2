@@ -1,9 +1,9 @@
-<div class="user-panel mx-3 mb-4 p-2 d-flex align-items-center bg-white bg-opacity-5 rounded-3">
+<div class="user-panel mx-3 mb-4 p-2 d-flex align-items-center rounded-3" style="background: var(--border-soft);">
     <div class="bg-primary text-white me-3 d-flex align-items-center justify-content-center fw-bold rounded-circle shadow-sm" style="width: 38px; height: 38px; font-size: 0.9rem;">
         {{ substr(Auth::user()->name, 0, 1) }}
     </div>
     <div class="info text-truncate">
-        <div class="fw-bold text-white small text-truncate" title="{{ Auth::user()->name }}">{{ Auth::user()->name }}</div>
+        <div class="fw-bold small text-truncate" style="color: var(--text-main);" title="{{ Auth::user()->name }}">{{ Auth::user()->name }}</div>
         <div class="text-muted text-uppercase" style="font-size: 0.6rem; font-weight: 700; letter-spacing: 0.5px;">{{ Auth::user()->role }}</div>
     </div>
 </div>
@@ -55,14 +55,18 @@
         align-items: center;
         justify-content: center;
         border-radius: 8px;
-        background: rgba(255, 255, 255, 0.03);
+        background: var(--border-soft);
         transition: var(--transition);
     }
     .nav-link.active .nav-icon-wrapper {
         background: rgba(255, 255, 255, 0.2);
     }
     .nav-link:hover .nav-icon-wrapper {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--border-soft);
+        opacity: 0.8;
+    }
+    [data-theme="light"] .nav-link.active .nav-icon-wrapper {
+        background: rgba(0, 0, 0, 0.1);
     }
 </style>
 
