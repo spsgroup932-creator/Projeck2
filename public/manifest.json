@@ -1,0 +1,17 @@
+{
+    "name": "Projeck2 Rental SaaS",
+    "short_name": "Projeck2",
+    "description": "Professional SaaS Rental Management System",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#111827",
+    "theme_color": "#111827",
+    "icons": [
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
