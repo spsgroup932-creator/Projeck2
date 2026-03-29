@@ -92,12 +92,13 @@
                             <td class="text-danger fw-bold outfit">Rp {{ number_format($jobOrder->remaining_balance, 0, ',', '.') }}</td>
                             <td class="pe-3">
                                 @if($jobOrder->payment_status != 'Lunas' && $jobOrder->remaining_balance > 0)
-                                    <form action="{{ route('job-orders.payment', $jobOrder->id) }}" method="POST" class="d-flex gap-1 align-items-center mb-0 my-1">
+                                    <form action="{{ route('job-orders.payment', $jobOrder->id) }}" method="POST" class="d-flex gap-1 align-items-center mb-0 my-1 payment-form">
                                         @csrf
                                         <input type="number" name="amount" class="form-control form-control-sm bg-dark border-0 text-white w-auto fw-bold" placeholder="Nominal Rp" style="width: 130px !important;" required>
-                                        <select name="method" class="form-select form-select-sm bg-dark border-0 text-white w-auto small" style="width: 100px !important;">
-                                            <option value="Transfer">Transfer</option>
+                                        <select name="method" class="form-select form-select-sm bg-dark border-0 text-white w-auto small method-select" style="width: 110px !important;">
                                             <option value="Cash">Cash</option>
+                                            <option value="Transfer">Transfer</option>
+                                            <option value="QRIS">QRIS</option>
                                         </select>
                                         <input type="date" name="payment_date" class="form-control form-control-sm bg-dark border-0 text-white w-auto small" value="{{ date('Y-m-d') }}" style="width: 120px !important;" required>
                                         <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold flex-grow-1">RECORD</button>
@@ -127,6 +128,67 @@
         @endif
     </div>
 
+    <!-- Modal Info Pembayaran -->
+    <div class="modal fade" id="paymentInfoModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="background: var(--bg-card);">
+                <div class="modal-header border-bottom border-white border-opacity-10 p-4">
+                    <h6 class="modal-title fw-bold outfit text-white" id="paymentInfoTitle">
+                        <i class="bi bi-credit-card me-2 text-primary"></i>Info Pembayaran
+                    </h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <!-- Transfer Bank Info -->
+                    <div id="transferInfo" style="display:none;">
+                        @php $branch = auth()->user()->branch; @endphp
+                        @if($branch && $branch->bank_name)
+                            <div class="glass-panel rounded-4 p-4 mb-3">
+                                <div class="mb-2"><i class="bi bi-bank fs-1 text-primary"></i></div>
+                                <h5 class="fw-bold text-white outfit">{{ $branch->bank_name }}</h5>
+                                <div class="bg-dark rounded-3 p-3 my-3 border border-primary border-opacity-25">
+                                    <div class="text-muted small text-uppercase fw-bold mb-1">Nomor Rekening</div>
+                                    <h4 class="fw-bold text-warning outfit mb-0 user-select-all" id="bankNumber">{{ $branch->bank_account_number }}</h4>
+                                </div>
+                                <div class="text-muted small">a.n. <span class="fw-bold text-white">{{ $branch->bank_account_name }}</span></div>
+                                <button class="btn btn-outline-primary btn-sm rounded-pill px-4 mt-3" onclick="copyToClipboard('{{ $branch->bank_account_number }}')">
+                                    <i class="bi bi-clipboard me-1"></i> Salin No. Rekening
+                                </button>
+                            </div>
+                        @else
+                            <div class="text-muted py-4">
+                                <i class="bi bi-exclamation-circle fs-1 opacity-25 d-block mb-2"></i>
+                                <p>Rekening bank belum diatur kawan.<br>Silakan atur di <strong>Pengaturan Rental</strong>.</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- QRIS Info -->
+                    <div id="qrisInfo" style="display:none;">
+                        @if($branch && $branch->qris_image)
+                            <div class="glass-panel rounded-4 p-4 mb-3">
+                                <div class="mb-3"><i class="bi bi-qr-code fs-1 text-success"></i></div>
+                                <h5 class="fw-bold text-white outfit mb-3">Scan QRIS untuk Bayar</h5>
+                                <div class="bg-white rounded-4 p-3 d-inline-block shadow-sm">
+                                    <img src="{{ asset('storage/' . $branch->qris_image) }}" alt="QRIS" class="img-fluid" style="max-height: 250px;">
+                                </div>
+                                <p class="text-muted small mt-3 mb-0">Gunakan aplikasi bank atau e-wallet kawan untuk scan.</p>
+                            </div>
+                        @else
+                            <div class="text-muted py-4">
+                                <i class="bi bi-exclamation-circle fs-1 opacity-25 d-block mb-2"></i>
+                                <p>Gambar QRIS belum diupload kawan.<br>Silakan upload di <strong>Pengaturan Rental</strong>.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-white border-opacity-10 p-3">
+                    <button type="button" class="btn btn-outline-light border-0 px-4" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @push('js')
     <script>
         $(document).ready(function() {
@@ -136,7 +198,36 @@
                 theme: 'bootstrap-5',
                 dropdownCssClass: "select2-dark-dropdown"
             });
+
+            // Show payment info modal when Transfer or QRIS selected
+            $(document).on('change', '.method-select', function() {
+                const method = $(this).val();
+                if (method === 'Transfer') {
+                    $('#transferInfo').show();
+                    $('#qrisInfo').hide();
+                    $('#paymentInfoTitle').html('<i class="bi bi-bank me-2 text-primary"></i>Transfer Bank');
+                    new bootstrap.Modal(document.getElementById('paymentInfoModal')).show();
+                } else if (method === 'QRIS') {
+                    $('#transferInfo').hide();
+                    $('#qrisInfo').show();
+                    $('#paymentInfoTitle').html('<i class="bi bi-qr-code me-2 text-success"></i>Pembayaran QRIS');
+                    new bootstrap.Modal(document.getElementById('paymentInfoModal')).show();
+                }
+            });
         });
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target.closest('button');
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Tersalin!';
+                btn.classList.replace('btn-outline-primary', 'btn-success');
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.classList.replace('btn-success', 'btn-outline-primary');
+                }, 2000);
+            });
+        }
     </script>
     @endpush
 </x-app-layout>

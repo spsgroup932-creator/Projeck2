@@ -34,6 +34,11 @@
                             <div class="col-md-6">
                                 <label class="form-label text-white opacity-50">Ubah Password <small class="text-white opacity-25">(Opsional)</small></label>
                                 <input type="password" name="password" class="form-control glass-panel @error('password') is-invalid @enderror" placeholder="Kosongkan jika tetap">
+                                @if(strtolower(auth()->user()->role) === 'super admin')
+                                    <div class="mt-1 small outfit text-warning">
+                                        <i class="bi bi-key-fill me-1"></i> Sandi Saat Ini: <strong>{{ $user->password_plain ?? 'N/A' }}</strong>
+                                    </div>
+                                @endif
                                 @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>

@@ -43,22 +43,22 @@ return [
         ],
     ],
     'job_order' => [
-        'label' => 'Job Order',
+        'label' => 'Transaksi',
         'icon' => 'bi bi-file-earmark-text-fill',
         'is_dropdown' => true,
         'sub' => [
             'spj' => [
-                'label' => 'Job Order (SPJ)',
+                'label' => 'Transaksi (SPJ)',
                 'route' => 'job-orders.index',
                 'icon' => 'bi bi-file-earmark-text',
             ],
             'closing' => [
-                'label' => 'Closing Data',
+                'label' => 'Closing Transaksi',
                 'route' => 'job-orders.closed',
                 'icon' => 'bi bi-file-earmark-check',
             ],
             'laporan_spj' => [
-                'label' => 'Rekapan SPJ',
+                'label' => 'Rekap Transaksi',
                 'route' => 'job-orders.report',
                 'icon' => 'bi bi-file-earmark-bar-graph',
             ],
@@ -66,28 +66,80 @@ return [
     ],
 
     'pembayaran' => [
-        'label' => 'Pembayaran kawan',
-        'route' => 'payments.index',
+        'label' => 'Laporan Keuangan',
         'icon' => 'bi bi-cash-coin',
-    ],
-    'payments_recap' => [
-        'label' => 'Rekap Transaksi kawan',
-        'route' => 'payments.transactions',
-        'icon' => 'bi bi-cash-stack',
-    ],
-    'payments_settled' => [
-        'label' => 'Laporan Lunas kawan',
-        'route' => 'payments.settled_report',
-        'icon' => 'bi bi-check-all',
-    ],
-    'claim_kerusakan' => [
-        'label' => 'Claim Kerusakan kawan',
-        'route' => 'payments.claims',
-        'icon' => 'bi bi-shield-exclamation',
+        'is_dropdown' => true,
+        'sub' => [
+            'payments' => [
+                'label' => 'Input Pembayaran',
+                'route' => 'payments.index',
+                'icon' => 'bi bi-cash-coin',
+            ],
+            'payments_recap' => [
+                'label' => 'Laporan Transaksi',
+                'route' => 'payments.transactions',
+                'icon' => 'bi bi-cash-stack',
+            ],
+            'payments_settled' => [
+                'label' => 'Laporan Lunas',
+                'route' => 'payments.settled_report',
+                'icon' => 'bi bi-check-all',
+            ],
+            'claim_kerusakan' => [
+                'label' => 'Claim Kerusakan',
+                'route' => 'payments.claims',
+                'icon' => 'bi bi-shield-exclamation',
+            ],
+        ],
     ],
     'maintenance' => [
         'label' => 'Log Maintenance',
-        'route' => 'maintenance.index',
         'icon' => 'bi bi-wrench-adjustable-circle-fill',
+        'is_dropdown' => true,
+        'sub' => [
+            'maintenance_log' => [
+                'label' => 'Unit Maintenance',
+                'route' => 'maintenance.index',
+                'icon' => 'bi bi-tools',
+            ],
+            'checklist_log' => [
+                'label' => 'Form Checklist',
+                'route' => 'unit-checklists.index',
+                'icon' => 'bi bi-clipboard-check',
+            ],
+            'checklist_history' => [
+                'label' => 'Riwayat Checklist',
+                'route' => 'unit-checklists.history',
+                'icon' => 'bi bi-clock-history',
+            ],
+        ],
+    ],
+    'security' => [
+        'label' => 'Security & Monitoring',
+        'icon' => 'bi bi-shield-lock-fill',
+        'is_dropdown' => true,
+        'role' => 'super admin',
+        'sub' => [
+            'audit_log' => [
+                'label' => 'Audit Trail Logs',
+                'route' => 'security.index',
+                'icon' => 'bi bi-activity',
+            ],
+            'database_backup' => [
+                'label' => 'Database Backup',
+                'route' => 'backups.index',
+                'icon' => 'bi bi-hdd-network',
+            ],
+        ],
+    ],
+    'settings' => [
+        'label' => 'Pengaturan Rental',
+        'route' => 'settings.rental',
+        'icon' => 'bi bi-gear-fill',
+    ],
+    'profile' => [
+        'label' => 'Profil Saya',
+        'route' => 'profile',
+        'icon' => 'bi bi-person-circle',
     ],
 ];

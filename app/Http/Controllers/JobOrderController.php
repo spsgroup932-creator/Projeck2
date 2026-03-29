@@ -16,7 +16,7 @@ class JobOrderController extends Controller
 {
     public function index()
     {
-        $jobOrders = JobOrder::with(['customer', 'unit', 'driver', 'user'])
+        $jobOrders = JobOrder::with(['customer', 'unit', 'driver', 'user', 'checklists'])
             ->where('is_closed', false)
             ->orderBy('id', 'desc')
             ->paginate(10);
@@ -38,10 +38,13 @@ class JobOrderController extends Controller
         $units = Unit::orderBy('name')->get();
         $drivers = Driver::orderBy('name')->get();
         
-        $today = Carbon::now()->format('Ymd');
-        $prefix = 'SPJ' . $today;
+        $user = auth()->user();
+        $branchCode = $user->branch ? $user->branch->code : 'GEN';
+        $today = Carbon::now()->format('ymd'); // Use YYMMDD for shorter format
+        $prefix = $branchCode . '-SPJ-' . $today . '-';
         
-        $lastSpj = JobOrder::where('spj_number', 'like', $prefix . '%')
+        $lastSpj = JobOrder::withoutGlobalScopes()
+            ->where('spj_number', 'like', $prefix . '%')
             ->orderBy('spj_number', 'desc')
             ->first();
             
@@ -60,7 +63,6 @@ class JobOrderController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'spj_number' => 'required|unique:job_orders',
             'customer_id' => 'required|exists:customers,id',
             'unit_id' => 'required|exists:units,id',
             'driver_id' => 'required|exists:drivers,id',
@@ -72,14 +74,54 @@ class JobOrderController extends Controller
             'days_count' => 'required|numeric|min:1',
             'total_price' => 'required|numeric',
             'payment_status' => 'required|in:Lunas,DP',
+            'initial_payment' => 'nullable|numeric|min:0',
         ]);
 
-        $data = $request->all();
-        $data['user_id'] = auth()->id();
+        $user = auth()->user();
+        $branchCode = $user->branch ? $user->branch->code : 'GEN';
+        $today = Carbon::now()->format('ymd');
+        $prefix = $branchCode . '-SPJ-' . $today . '-';
 
-        JobOrder::create($data);
+        // Hitung ulang di store agar tidak bentrok kawan
+        $lastSpj = JobOrder::withoutGlobalScopes()
+            ->where('spj_number', 'like', $prefix . '%')
+            ->orderBy('spj_number', 'desc')
+            ->first();
 
-        return redirect()->route('job-orders.index')->with('success', 'Job Order (SPJ) berhasil dibuat kawan!');
+        if ($lastSpj) {
+            $lastNumber = (int)substr($lastSpj->spj_number, -3);
+            $newNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+        } else {
+            $newNumber = '001';
+        }
+
+        $data = $request->except('initial_payment');
+        $data['spj_number'] = $prefix . $newNumber;
+        $data['user_id'] = $user->id;
+
+        $jobOrder = JobOrder::create($data);
+
+        // Jika ada pembayaran awal kawan
+        if ($request->initial_payment > 0) {
+            $jobOrder->payments()->create([
+                'amount' => $request->initial_payment,
+                'method' => 'CASH', // Default cash
+                'payment_date' => now(),
+                'user_id' => $user->id,
+                'branch_id' => $jobOrder->branch_id,
+            ]);
+        } elseif ($request->payment_status === 'Lunas') {
+            // Jika lunas tapi tidak isi nominal, anggap bayar full kawan
+            $jobOrder->payments()->create([
+                'amount' => $jobOrder->total_price,
+                'method' => 'CASH',
+                'payment_date' => now(),
+                'user_id' => $user->id,
+                'branch_id' => $jobOrder->branch_id,
+            ]);
+        }
+ 
+        return redirect()->route('job-orders.index')->with('success', 'Job Order berhasil dibuat kawan! Nomor SPJ: ' . $data['spj_number']);
     }
 
     public function show(JobOrder $jobOrder)
@@ -104,9 +146,10 @@ class JobOrderController extends Controller
 
         $jobOrder->payments()->create([
             'amount' => $request->amount,
-            'method' => $request->method,
+            'method' => $request->input('method'),
             'payment_date' => $request->payment_date,
             'user_id' => auth()->id(),
+            'branch_id' => $jobOrder->branch_id,
         ]);
 
         return redirect()->back()->with('success', 'Pembayaran berhasil ditambahkan kawan!');
@@ -123,6 +166,7 @@ class JobOrderController extends Controller
             'description' => $request->description,
             'amount' => $request->amount,
             'user_id' => auth()->id(),
+            'branch_id' => $jobOrder->branch_id,
         ]);
 
         return redirect()->back()->with('success', 'Claim kerusakan berhasil ditambahkan kawan!');

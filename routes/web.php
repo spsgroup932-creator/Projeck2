@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SecurityController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UnitController;
@@ -49,6 +50,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Payment Module
     Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::get('payments/transactions', [PaymentController::class, 'transactions'])->name('payments.transactions');
+    Route::get('payments/transactions/pdf', [PaymentController::class, 'exportPdf'])->name('payments.transactions.pdf');
+    Route::get('payments/transactions/excel', [PaymentController::class, 'exportExcel'])->name('payments.transactions.excel');
     Route::get('payments/settled-report', [PaymentController::class, 'settledReport'])->name('payments.settled_report');
     Route::get('payments/claims', [PaymentController::class, 'claims'])->name('payments.claims');
     Route::post('payments/{job_order}/settle', [PaymentController::class, 'settle'])->name('payments.settle');
@@ -64,6 +67,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('job-orders/{job_order}/claim', [JobOrderController::class, 'addClaim'])->name('job-orders.claim');
     Route::post('job-orders/{job_order}/close', [JobOrderController::class, 'closeOrder'])->name('job-orders.close');
     Route::post('job-orders/{job_order}/unclose', [JobOrderController::class, 'unclose'])->name('job-orders.unclose');
+    
+    // Unit Checklists
+    Route::get('unit-checklists/history', [\App\Http\Controllers\UnitChecklistController::class, 'history'])->name('unit-checklists.history');
+    Route::get('unit-checklists', [\App\Http\Controllers\UnitChecklistController::class, 'index'])->name('unit-checklists.index');
+    Route::get('unit-checklists/create', [\App\Http\Controllers\UnitChecklistController::class, 'create'])->name('unit-checklists.create');
+    Route::post('unit-checklists', [\App\Http\Controllers\UnitChecklistController::class, 'store'])->name('unit-checklists.store');
+    
+    // Security Audit Logs & Backups
+    Route::get('security-logs', [SecurityController::class, 'index'])->name('security.index');
+    Route::get('security-logs/{log}', [SecurityController::class, 'show'])->name('security.show');
+    
+    Route::get('backups', [\App\Http\Controllers\BackupController::class, 'index'])->name('backups.index');
+    Route::post('backups/generate', [\App\Http\Controllers\BackupController::class, 'generate'])->name('backups.generate');
+    Route::get('backups/{filename}/download', [\App\Http\Controllers\BackupController::class, 'download'])->name('backups.download');
+    Route::delete('backups/{filename}', [\App\Http\Controllers\BackupController::class, 'destroy'])->name('backups.destroy');
+    Route::get('settings/rental', [BranchController::class, 'settings'])->name('settings.rental');
+    Route::post('settings/rental', [BranchController::class, 'updateSettings'])->name('settings.rental.update');
+
+    // System Settings (Super Admin Only)
+    Route::get('settings/system', [BranchController::class, 'systemSettings'])->name('settings.system');
+    Route::post('settings/system', [BranchController::class, 'updateSystemSettings'])->name('settings.system.update');
+
+    // Profile Settings
+    Route::get('profile', [UserController::class, 'profile'])->name('profile');
+    Route::post('profile', [UserController::class, 'updateProfile'])->name('profile.update');
     
     Route::resource('maintenance', \App\Http\Controllers\UnitMaintenanceController::class);
     

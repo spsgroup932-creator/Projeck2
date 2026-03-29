@@ -319,6 +319,71 @@
                 </div>
             </div>
         </div>
+
+        <div class="row g-4 mt-2">
+            <div class="col-12">
+                <div class="card glass-panel border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+                    <div class="card-header bg-transparent border-bottom border-white border-opacity-10 py-3 px-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-clipboard-check-fill text-info"></i>
+                            <h6 class="fw-bold mb-0 text-white text-uppercase tracking-wider fs-7">Hasil Inspeksi Unit (Checklist)</h6>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            @php
+                                $departure = $jobOrder->checklists->where('type', 'departure')->first();
+                                $return = $jobOrder->checklists->where('type', 'return')->first();
+                            @endphp
+                            <div class="col-md-6">
+                                <div class="p-4 rounded-4 bg-primary bg-opacity-5 border border-primary border-opacity-10 h-100 text-white">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h6 class="fw-bold outfit text-primary mb-0 uppercase"><i class="bi bi-box-arrow-up me-2"></i>Keberangkatan</h6>
+                                        @if($departure) <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 small">{{ $departure->check_date->format('d M Y, H:i') }}</span> @endif
+                                    </div>
+                                    @if($departure)
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <div class="text-white opacity-50 small mb-1 uppercase fs-xs">Kilometer</div>
+                                                <div class="fw-bold">{{ number_format($departure->km_reading) }} KM</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-white opacity-50 small mb-1 uppercase fs-xs">BBM</div>
+                                                <div class="fw-bold">{{ $departure->fuel_level }} Bar</div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="text-center py-4 opacity-25">Belum Check-out kawan.</div>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-4 rounded-4 bg-success bg-opacity-5 border border-success border-opacity-10 h-100 text-white">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h6 class="fw-bold outfit text-success mb-0 uppercase"><i class="bi bi-box-arrow-in-down me-2"></i>Kepulangan</h6>
+                                        @if($return) <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 small">{{ $return->check_date->format('d M Y, H:i') }}</span> @endif
+                                    </div>
+                                    @if($return)
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <div class="text-white opacity-50 small mb-1 uppercase fs-xs">Kilometer</div>
+                                                <div class="fw-bold">{{ number_format($return->km_reading) }} KM</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-white opacity-50 small mb-1 uppercase fs-xs">BBM</div>
+                                                <div class="fw-bold">{{ $return->fuel_level }} Bar</div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="text-center py-4 opacity-25">Menunggu unit kembali kawan.</div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <style>
@@ -328,10 +393,10 @@
         .tracking-wider { letter-spacing: 0.05em; }
         
         .form-control:focus, .form-select:focus {
-            background-color: #1a1a1a !important;
-            border-color: #ffc107 !important;
-            color: white !important;
-            box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.1) !important;
+            background-color: var(--bg-card) !important;
+            border-color: var(--primary) !important;
+            color: var(--text-main) !important;
+            box-shadow: 0 0 0 0.25rem var(--primary-glow) !important;
         }
 
         .btn-warning { background-color: #ffc107 !important; color: #000 !important; }

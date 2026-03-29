@@ -44,6 +44,7 @@ class DashboardController extends Controller
             'units_on_road' => $queryUnits->clone()->whereHas('jobOrders', function($q) {
                 $q->where('is_closed', false);
             })->count(),
+            'total_subscription_revenue' => \App\Models\Branch::sum('subscription_amount'),
         ];
 
         // Revenue Data (Last 6 Months)

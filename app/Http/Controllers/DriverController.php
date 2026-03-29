@@ -33,7 +33,7 @@ class DriverController extends Controller
             'ktp_photo' => 'nullable|image|max:2048'
         ]);
 
-        $last = Driver::latest('id')->first();
+        $last = Driver::withoutGlobalScopes()->latest('id')->first();
         $number = $last ? (int)substr($last->driver_code, 4) + 1 : 1;
         $code = 'DRV-' . str_pad($number, 4, '0', STR_PAD_LEFT);
 

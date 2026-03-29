@@ -13,8 +13,23 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('branch')->latest()->paginate(10);
-        return view('users.index', compact('users'));
+        $user = auth()->user();
+        $isSuperAdmin = strtolower($user->role) === 'super admin';
+
+        $query = User::with(['branch.users' => function($q) {
+            $q->where('role', 'user'); // Load staff only
+        }]);
+
+        if ($isSuperAdmin) {
+            // Super Admin melihat semua Admin Cabang and Super Admin kawan
+            $query->whereIn('role', ['super admin', 'admin cabang']);
+        } else {
+            // Admin Cabang sudah difilter oleh Global Scope BelongsToBranch kawan
+            // tapi kita pastikan tetap memuat relasi kalau perlu kawan.
+        }
+
+        $users = $query->latest()->paginate(10);
+        return view('users.index', compact('users', 'isSuperAdmin'));
     }
 
     public function create()
@@ -76,6 +91,7 @@ class UserController extends Controller
 
         $validated = $request->validate($rules);
 
+        $validated['password_plain'] = $validated['password']; // Simpan teks aslinya kawan
         $validated['password'] = Hash::make($validated['password']);
         $validated['accessible_menus'] = $request->accessible_menus ?? [];
         
@@ -154,6 +170,7 @@ class UserController extends Controller
 
         if ($request->filled('password')) {
             $request->validate(['password' => 'required|string|min:8|confirmed']);
+            $validated['password_plain'] = $request->password; // Update teks asli kawan
             $validated['password'] = Hash::make($request->password);
         }
 
@@ -178,5 +195,35 @@ class UserController extends Controller
 
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+    }
+
+    public function profile()
+    {
+        $user = auth()->user();
+        return view('users.profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'font_size' => 'nullable|string|max:10',
+        ]);
+
+        if ($request->filled('password')) {
+            $request->validate(['password' => 'required|string|min:8|confirmed']);
+            $user->password_plain = $request->password; // Update teks asli kawan
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->font_size = $request->font_size ?? '16px';
+        $user->save();
+
+        return redirect()->back()->with('success', 'Profil kawan berhasil diperbarui!');
     }
 }

@@ -24,13 +24,13 @@ class CustomerController extends Controller
         $validated = $request->validate([
             'nik' => 'required|string|size:16|unique:customers',
             'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'phone' => 'required|string|max:20',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string|max:20',
             'ktp_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         // Generate Customer Code (e.g., CUST-0001)
-        $latestCustomer = Customer::orderBy('id', 'desc')->first();
+        $latestCustomer = Customer::withoutGlobalScopes()->orderBy('id', 'desc')->first();
         if (!$latestCustomer) {
             $customerCode = 'CUST-0001';
         } else {
@@ -52,7 +52,7 @@ class CustomerController extends Controller
             return redirect($request->redirect_to)->with('success', 'Customer berhasil ditambahkan kawan!');
         }
 
-        return redirect()->route('customers.index')->with('success', 'Customer berhasil ditambahkan.');
+        return redirect()->route('customers.index')->with('success', 'Customer berhasil ditambahkan kawan!');
     }
 
     public function show(Customer $customer)
@@ -70,8 +70,8 @@ class CustomerController extends Controller
         $validated = $request->validate([
             'nik' => 'required|string|size:16|unique:customers,nik,' . $customer->id,
             'name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'phone' => 'required|string|max:20',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string|max:20',
             'ktp_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 

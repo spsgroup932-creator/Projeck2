@@ -10,20 +10,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Traits\BelongsToBranch;
+use App\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, BelongsToBranch;
+    use HasFactory, Notifiable, BelongsToBranch, LogsActivity;
 
     protected $fillable = [
         'name',
         'email',
         'password',
+        'password_plain',
         'role',
         'accessible_menus',
         'branch_id',
         'last_seen_at',
+        'font_size',
     ];
 
     protected $hidden = [
@@ -53,7 +56,7 @@ class User extends Authenticatable
     public function canAccessMenu($menuKey)
     {
         // Bypass untuk super admin kawan
-        if (strtolower($this->role) === 'super admin') {
+        if (strtolower($this->role) === 'super admin' || $menuKey === 'settings' || $menuKey === 'profile') {
             return true;
         }
 

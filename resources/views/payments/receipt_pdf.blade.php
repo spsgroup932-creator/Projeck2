@@ -18,10 +18,30 @@
     </style>
 </head>
 <body>
+    @php
+        $branch = $payment->jobOrder->branch;
+    @endphp
+    
+    @if($branch && $branch->watermark)
+        <div style="position: absolute; top: 30%; left: 10%; width: 80%; opacity: 0.1; transform: rotate(-30deg); z-index: -1; text-align: center;">
+            <img src="{{ public_path('storage/' . $branch->watermark) }}" style="width: 100%;">
+        </div>
+    @elseif($branch && $branch->watermark_text)
+        <div style="position: absolute; top: 40%; left: 0; width: 100%; opacity: 0.1; transform: rotate(-30deg); z-index: -1; text-align: center; font-size: 60pt; font-weight: bold; color: #000;">
+            {{ strtoupper($branch->watermark_text) }}
+        </div>
+    @endif
+
     <div class="receipt">
         <div class="header">
-            <div class="company">IMAM RENTAL</div>
-            <div style="font-size: 7pt;">Kawasan Wisata Bahari | 0812-7777-8888</div>
+            @if($branch && $branch->logo)
+                <img src="{{ public_path('storage/' . $branch->logo) }}" style="max-height: 40px; margin-bottom: 5px;">
+            @endif
+            <div class="company">{{ strtoupper($branch->name ?? 'IMAM RENTAL') }}</div>
+            <div style="font-size: 7pt;">
+                {{ $branch->address ?? 'Alamat Belum Diatur' }} 
+                @if($branch->whatsapp_number) | WA: {{ $branch->whatsapp_number }} @endif
+            </div>
         </div>
 
         <div class="divider"></div>
@@ -42,10 +62,21 @@
         
         <div class="divider"></div>
 
+        @if($branch && $branch->bank_name)
+            <div style="font-size: 7pt; margin-top: 5px;">
+                <strong>Pembayaran Via:</strong> {{ $branch->bank_name }} a/n {{ $branch->bank_account_name }} ({{ $branch->bank_account_number }})
+            </div>
+            <div class="divider"></div>
+        @endif
+
         <div class="footer">
-            <p>Terima kasih atas pembayarannya kawan!</p>
-            <p>Simpan nota ini sebagai bukti sah kawan.</p>
-            <p style="font-style: italic;">Admin: {{ $payment->user->name ?? 'System' }}</p>
+            @if($branch && $branch->receipt_footer)
+                <p style="white-space: pre-line;">{{ $branch->receipt_footer }}</p>
+            @else
+                <p>Terima kasih atas pembayarannya kawan!</p>
+                <p>Simpan nota ini sebagai bukti sah kawan.</p>
+            @endif
+            <p style="font-style: italic; margin-top: 10px;">Admin: {{ $payment->user->name ?? 'System' }}</p>
         </div>
     </div>
 </body>

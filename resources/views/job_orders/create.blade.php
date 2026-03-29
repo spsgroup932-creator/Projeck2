@@ -9,6 +9,17 @@
     <form action="{{ route('job-orders.store') }}" method="POST" id="spjForm">
         @csrf
         
+        @if ($errors->any())
+            <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-20 text-danger mb-4 rounded-3 p-3">
+                <h6 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i> Ada kesalahan input kawan:</h6>
+                <ul class="mb-0 small">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        
         <!-- TOP PANEL: Header SPJ -->
         <div class="card border-0 shadow-sm rounded-4 mb-4 bg-dark text-white overflow-hidden">
             <div class="card-body p-4">
@@ -22,9 +33,9 @@
                         <label class="form-label text-white small opacity-50 mb-1">MARKET / SALES</label>
                         <select name="sales_market" class="form-select bg-dark border-white border-opacity-10 text-white">
                             <option value="">- Pilih -</option>
-                            <option value="MARKETING">MARKETING</option>
-                            <option value="SALES A">SALES A</option>
-                            <option value="SALES B">SALES B</option>
+                            <option value="MARKETING" {{ old('sales_market') == 'MARKETING' ? 'selected' : '' }}>MARKETING</option>
+                            <option value="SALES A" {{ old('sales_market') == 'SALES A' ? 'selected' : '' }}>SALES A</option>
+                            <option value="SALES B" {{ old('sales_market') == 'SALES B' ? 'selected' : '' }}>SALES B</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -60,7 +71,7 @@
                             <select name="customer_id" id="customer_id" class="form-select @error('customer_id') is-invalid @enderror">
                                 <option value="">- Ketik nama untuk mencari -</option>
                                 @foreach($customers as $c)
-                                    <option value="{{ $c->id }}" data-phone="{{ $c->phone }}" data-address="{{ $c->address }}">{{ $c->name }}</option>
+                                    <option value="{{ $c->id }}" data-phone="{{ $c->phone }}" data-address="{{ $c->address }}" {{ old('customer_id') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -81,24 +92,29 @@
                         <div class="mb-4">
                             <label class="form-label">Status Pembayaran *</label>
                             <div class="d-flex gap-2">
-                                <input type="radio" class="btn-check" name="payment_status" id="pay_lunas" value="Lunas" checked>
+                                <input type="radio" class="btn-check" name="payment_status" id="pay_lunas" value="Lunas" {{ old('payment_status', 'Lunas') == 'Lunas' ? 'checked' : '' }}>
                                 <label class="btn btn-outline-success flex-grow-1" for="pay_lunas"><i class="bi bi-check-circle me-1"></i> Lunas</label>
-                                <input type="radio" class="btn-check" name="payment_status" id="pay_dp" value="DP">
+                                <input type="radio" class="btn-check" name="payment_status" id="pay_dp" value="DP" {{ old('payment_status') == 'DP' ? 'checked' : '' }}>
                                 <label class="btn btn-outline-warning flex-grow-1" for="pay_dp"><i class="bi bi-hourglass-split me-1"></i> DP</label>
                             </div>
                         </div>
                         <div class="row g-3">
                             <div class="col-6">
                                 <label class="form-label text-white fw-medium">Harga / Hari *</label>
-                                <input type="number" name="price_per_day" id="price_day" class="form-control glass-panel @error('price_per_day') is-invalid @enderror" placeholder="Rp 0">
+                                <input type="number" name="price_per_day" id="price_day" class="form-control glass-panel @error('price_per_day') is-invalid @enderror" placeholder="Rp 0" value="{{ old('price_per_day') }}">
                             </div>
                             <div class="col-6">
                                 <label class="form-label text-white fw-medium">X Hari *</label>
-                                <input type="number" name="days_count" id="days_count" class="form-control glass-panel @error('days_count') is-invalid @enderror" value="1">
+                                <input type="number" name="days_count" id="days_count" class="form-control glass-panel @error('days_count') is-invalid @enderror" value="{{ old('days_count', 1) }}">
                             </div>
                             <div class="col-12">
+                                <label class="form-label fw-bold text-white text-info">Uang Muka / DP Awal (Rp)</label>
+                                <input type="number" name="initial_payment" id="initial_payment" class="form-control glass-panel border-info border-opacity-50 text-info fw-bold" placeholder="Kosongkan jika Lunas..." value="{{ old('initial_payment') }}">
+                                <small class="text-info opacity-50 italic">Khusus untuk status DP kawan.</small>
+                            </div>
+                            <div class="col-12 mt-4">
                                 <label class="form-label fw-bold text-white">Tarif Total *</label>
-                                <input type="number" name="total_price" id="total_price" class="form-control bg-success bg-opacity-10 border-success border-opacity-25 text-success fw-bold fs-4" readonly>
+                                <input type="number" name="total_price" id="total_price" class="form-control bg-success bg-opacity-10 border-success border-opacity-25 text-success fw-bold fs-4" readonly value="{{ old('total_price') }}">
                                 <small class="text-white opacity-50 italic">Otomatis dari harga x hari, bisa diedit kawan.</small>
                             </div>
                         </div>
@@ -119,7 +135,7 @@
                                 <select name="unit_id" id="unit_id" class="form-select @error('unit_id') is-invalid @enderror" required>
                                     <option value="">- Pilih kendaraan -</option>
                                     @foreach($units as $u)
-                                        <option value="{{ $u->id }}" data-nopol="{{ $u->nopol }}" data-year="{{ $u->year }}">{{ $u->name }}</option>
+                                        <option value="{{ $u->id }}" data-nopol="{{ $u->nopol }}" data-year="{{ $u->year }}" {{ old('unit_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
                                     @endforeach
                                 </select>
                                 @error('unit_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -133,7 +149,7 @@
                                 <select name="driver_id" class="form-select @error('driver_id') is-invalid @enderror" required>
                                     <option value="">- Pilih Driver -</option>
                                     @foreach($drivers as $d)
-                                        <option value="{{ $d->id }}">{{ $d->name }}</option>
+                                        <option value="{{ $d->id }}" {{ old('driver_id') == $d->id ? 'selected' : '' }}>{{ $d->name }}</option>
                                     @endforeach
                                 </select>
                                 @error('driver_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -142,27 +158,31 @@
 
                         <div class="mb-4">
                             <label class="form-label text-white fw-medium">Tujuan *</label>
-                            <input type="text" name="destination" class="form-control glass-panel @error('destination') is-invalid @enderror" placeholder="Bandara, Hotel, Nama Lokasi...">
+                            <input type="text" name="destination" class="form-control glass-panel @error('destination') is-invalid @enderror" placeholder="Bandara, Hotel, Nama Lokasi..." value="{{ old('destination') }}">
+                            @error('destination') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
                         <div class="row g-4 mb-4">
                             <div class="col-md-4">
                                 <label class="form-label text-white fw-medium">Jam Berangkat *</label>
-                                <input type="time" name="departure_time" class="form-control glass-panel">
+                                <input type="time" name="departure_time" class="form-control glass-panel @error('departure_time') is-invalid @enderror" value="{{ old('departure_time') }}">
+                                @error('departure_time') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label text-white fw-medium">Tgl Berangkat *</label>
-                                <input type="date" name="departure_date" class="form-control glass-panel">
+                                <input type="date" name="departure_date" class="form-control glass-panel @error('departure_date') is-invalid @enderror" value="{{ old('departure_date') }}">
+                                @error('departure_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label text-white fw-medium">Tgl Kembali *</label>
-                                <input type="date" name="return_date" class="form-control glass-panel">
+                                <input type="date" name="return_date" class="form-control glass-panel @error('return_date') is-invalid @enderror" value="{{ old('return_date') }}">
+                                @error('return_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label text-white fw-medium">Keterangan / Catatan</label>
-                            <textarea name="description" class="form-control glass-panel" rows="4" placeholder="Catatan tambahan..."></textarea>
+                            <textarea name="description" class="form-control glass-panel" rows="4" placeholder="Catatan tambahan...">{{ old('description') }}</textarea>
                         </div>
 
                         <div class="d-grid mt-5">

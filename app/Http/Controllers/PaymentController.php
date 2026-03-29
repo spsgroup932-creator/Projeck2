@@ -55,13 +55,11 @@ class PaymentController extends Controller
             });
         }
 
-        if ($request->filled('date_from')) {
-            $query->whereDate('payment_date', '>=', $request->date_from);
-        }
+        $date_from = $request->input('date_from') ?: now()->startOfMonth()->format('Y-m-d');
+        $date_to = $request->input('date_to') ?: now()->endOfMonth()->format('Y-m-d');
 
-        if ($request->filled('date_to')) {
-            $query->whereDate('payment_date', '<=', $request->date_to);
-        }
+        $query->whereDate('payment_date', '>=', $date_from);
+        $query->whereDate('payment_date', '<=', $date_to);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -70,16 +68,95 @@ class PaymentController extends Controller
             });
         }
 
-        $payments = $query->latest('payment_date')->paginate(30)->withQueryString();
-        $customers = Customer::orderBy('name')->get();
-        $totalMoney = $query->sum('amount');
+        // Clone query for exports kawan
+        $allPayments = $query->orderBy('payment_date', 'asc')->get();
+        
+        $cashPayments = $allPayments->where('method', 'CASH');
+        $transferPayments = $allPayments->where('method', 'Transfer');
 
-        return view('payments.transactions', compact('payments', 'customers', 'totalMoney'));
+        $totalAll = $allPayments->sum('amount');
+        $totalCash = $cashPayments->sum('amount');
+        $totalTransfer = $transferPayments->sum('amount');
+        
+        $customers = Customer::orderBy('name')->get();
+
+        return view('payments.transactions', compact(
+            'allPayments', 'cashPayments', 'transferPayments', 
+            'customers', 'totalAll', 'totalCash', 'totalTransfer',
+            'date_from', 'date_to'
+        ));
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = JobOrderPayment::query()->with(['jobOrder.customer', 'jobOrder.unit']);
+        
+        if ($request->filled('method')) {
+            $query->where('method', $request->input('method'));
+        }
+        
+        // Include existing filters kawan
+        if ($request->filled('customer_id')) {
+            $query->whereHas('jobOrder', function($q) use ($request) {
+                $q->where('customer_id', $request->input('customer_id'));
+            });
+        }
+        
+        $date_from = $request->input('date_from') ?: now()->startOfMonth()->format('Y-m-d');
+        $date_to = $request->input('date_to') ?: now()->endOfMonth()->format('Y-m-d');
+        
+        $query->whereDate('payment_date', '>=', $date_from);
+        $query->whereDate('payment_date', '<=', $date_to);
+
+        $payments = $query->orderBy('payment_date', 'asc')->get();
+        $title = "LAPORAN TRANSAKSI " . strtoupper($request->input('method') ?? 'KESELURUHAN');
+        $total = $payments->sum('amount');
+        $periode = date('d/m/Y', strtotime($date_from)) . " s/d " . date('d/m/Y', strtotime($date_to));
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('payments.report_export', compact('payments', 'title', 'total', 'periode'));
+        return $pdf->download('Report-' . ($request->input('method') ?? 'All') . '-' . date('Ymd') . '.pdf');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $query = JobOrderPayment::query()->with(['jobOrder.customer', 'jobOrder.unit']);
+        
+        if ($request->filled('method')) {
+            $query->where('method', $request->input('method'));
+        }
+        
+        // Include filters
+        if ($request->filled('customer_id')) {
+            $query->whereHas('jobOrder', function($q) use ($request) {
+                $q->where('customer_id', $request->input('customer_id'));
+            });
+        }
+        
+        $date_from = $request->input('date_from') ?: now()->startOfMonth()->format('Y-m-d');
+        $date_to = $request->input('date_to') ?: now()->endOfMonth()->format('Y-m-d');
+        
+        $query->whereDate('payment_date', '>=', $date_from);
+        $query->whereDate('payment_date', '<=', $date_to);
+
+        $payments = $query->orderBy('payment_date', 'asc')->get();
+        $total = $payments->sum('amount');
+        $title = "LAPORAN TRANSAKSI " . strtoupper($request->input('method') ?? 'KESELURUHAN');
+        $periode = date('d/m/Y', strtotime($date_from)) . " s/d " . date('d/m/Y', strtotime($date_to));
+        $filename = "Laporan-" . ($request->input('method') ?? 'Keseluruhan') . "-" . date('Ymd-His') . ".xls";
+
+        // Create HTML table for Excel kawan
+        $view = view('payments.report_export', compact('payments', 'title', 'total', 'periode'))->render();
+        
+        return response($view)
+            ->header('Content-Type', 'application/vnd.ms-excel')
+            ->header('Content-Disposition', "attachment; filename=$filename")
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     public function settledReport(Request $request)
     {
-        $query = JobOrder::query()->with(['customer', 'unit', 'driver'])
+        $query = JobOrder::query()->with(['customer', 'unit', 'driver', 'payments'])
                         ->where('payment_status', 'Lunas');
 
         if ($request->filled('customer_id')) {
@@ -87,11 +164,15 @@ class PaymentController extends Controller
         }
 
         if ($request->filled('date_from')) {
-            $query->whereDate('departure_date', '>=', $request->date_from);
+            $query->whereHas('payments', function($q) use ($request) {
+                $q->whereDate('payment_date', '>=', $request->date_from);
+            });
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('departure_date', '<=', $request->date_to);
+            $query->whereHas('payments', function($q) use ($request) {
+                $q->whereDate('payment_date', '<=', $request->date_to);
+            });
         }
 
         if ($request->has('search')) {
@@ -104,7 +185,7 @@ class PaymentController extends Controller
             });
         }
 
-        $jobOrders = $query->latest('departure_date')->paginate(20)->withQueryString();
+        $jobOrders = $query->latest('updated_at')->paginate(20)->withQueryString();
         $customers = Customer::orderBy('name')->get();
 
         return view('payments.settled_report', compact('jobOrders', 'customers'));
@@ -143,7 +224,7 @@ class PaymentController extends Controller
 
     public function claims(Request $request)
     {
-        $query = JobOrder::query()->with(['customer', 'unit', 'driver', 'claims'])
+        $query = JobOrder::query()->with(['customer', 'unit', 'driver', 'claims', 'payments'])
                         ->where(function($q) {
                             $q->whereHas('claims')
                               ->orWhere('payment_status', '!=', 'Lunas');
@@ -154,11 +235,15 @@ class PaymentController extends Controller
         }
 
         if ($request->filled('date_from')) {
-            $query->whereDate('departure_date', '>=', $request->date_from);
+            $query->whereHas('payments', function($q) use ($request) {
+                $q->whereDate('payment_date', '>=', $request->date_from);
+            });
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('departure_date', '<=', $request->date_to);
+            $query->whereHas('payments', function($q) use ($request) {
+                $q->whereDate('payment_date', '<=', $request->date_to);
+            });
         }
 
         if ($request->has('search')) {
@@ -171,9 +256,9 @@ class PaymentController extends Controller
             });
         }
 
-        $jobOrders = $query->latest('departure_date')->paginate(20)->withQueryString();
+        $jobOrders = $query->latest('created_at')->paginate(20)->withQueryString();
         $customers = Customer::orderBy('name')->get();
 
-        return view('payment.claims', compact('jobOrders', 'customers'));
+        return view('payments.claims', compact('jobOrders', 'customers'));
     }
 }

@@ -17,10 +17,10 @@ trait BelongsToBranch
         });
 
         static::addGlobalScope('branch', function (Builder $builder) {
-            // Hindari infinite loop kawan. Kita hanya apply scope kalau user sudah ter-load kawan.
             if (auth()->hasUser()) {
                 $user = auth()->user();
-                if ($user->role !== 'super admin') {
+                // Gunakan strtolower kawan biar aman dari typo huruf besar kawan
+                if (strtolower($user->role) !== 'super admin') {
                     $builder->where($builder->getQuery()->from . '.branch_id', $user->branch_id);
                 }
             }

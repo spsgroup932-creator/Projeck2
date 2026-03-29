@@ -2,6 +2,20 @@
     <div class="row g-4 mb-4">
         @if($isSuperAdmin)
         <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card h-100 p-4 border-0 shadow-lg hover-lift transition" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="sidebar-logo bg-white bg-opacity-20 text-white" style="width: 56px; height: 56px;">
+                        <i class="bi bi-wallet2 fs-3"></i>
+                    </div>
+                    <div>
+                        <div class="text-white opacity-75 small fw-bold text-uppercase mb-1 outfit" style="letter-spacing: 1px;">Cuan Langganan</div>
+                        <div class="h4 mb-0 fw-bold text-white outfit">Rp {{ number_format($stats['total_subscription_revenue'], 0, ',', '.') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
             <div class="card h-100 p-4 border-0 shadow-lg hover-lift transition">
                 <div class="d-flex align-items-center gap-4">
                     <div class="sidebar-logo" style="width: 56px; height: 56px; background: rgba(59, 130, 246, 0.1); color: #3b82f6;">

@@ -4,17 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Admin Dashboard') }}</title>
+    <title>{{ \App\Models\SystemSetting::get('app_name', config('app.name', 'Admin Dashboard')) }}</title>
 
     <!-- PWA Settings -->
     <meta name="theme-color" content="#111827">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <link rel="apple-touch-icon" href="{{ asset('icons/icon-512x512.png') }}">
 
-    <!-- Google Fonts: Inter & Outfit -->
+    <!-- Google Fonts: Inter, Outfit, Poppins, Roboto, Montserrat, Nunito -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Montserrat:wght@300;400;500;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -24,10 +24,14 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <style>
+        html {
+            font-size: {{ auth()->user()->font_size ?? '16px' }};
+        }
         :root {
             --sidebar-width: 280px;
-            --primary: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.4);
+            --primary: {{ optional(auth()->user()->branch)->header_color ?? '#6366f1' }};
+            --primary-glow: {{ (optional(auth()->user()->branch)->header_color ?? '#6366f1') . '66' }}; /* Hex with 40% opacity */
+            --font-main: '{{ optional(auth()->user()->branch)->font_family ?? 'Inter' }}', sans-serif;
             --secondary: #0ea5e9;
             --bg-body: #020617;
             --bg-card: #0f172a;
@@ -51,7 +55,7 @@
         }
 
         body {
-            font-size: 0.88rem;
+            font-family: var(--font-main);
             background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
@@ -60,7 +64,7 @@
         }
 
         h1, h2, h3, h4, h5, h6, .outfit {
-            font-family: 'Outfit', sans-serif;
+            font-family: var(--font-main);
         }
 
         .app-container { display: flex; min-height: 100vh; }
@@ -98,7 +102,7 @@
 
         @media (max-width: 991.98px) {
             .sidebar {
-                left: -var(--sidebar-width);
+                left: calc(-1 * var(--sidebar-width));
                 box-shadow: none;
             }
             .sidebar.show {
@@ -114,6 +118,9 @@
                 z-index: 1040;
             }
             #sidebar-overlay.show { display: block; }
+            .main-panel {
+                margin-left: 0 !important;
+            }
         }
 
         .sidebar-header {
@@ -146,7 +153,7 @@
 
         .nav-link:hover {
             background: rgba(255,255,255,0.05);
-            color: #fff;
+            color: var(--primary);
             transform: translateX(8px);
         }
 
@@ -233,16 +240,16 @@
 
         /* Form Styling (Not too big kawan!) */
         .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-soft) !important;
             border-radius: 12px !important;
             padding: 0.65rem 1rem !important;
-            color: #fff !important;
+            color: var(--text-main) !important;
             transition: var(--transition);
         }
 
         .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.3) !important;
+            color: var(--text-muted) !important;
         }
 
         .form-control:focus {
@@ -266,15 +273,12 @@
 
         /* Utility */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--bg-card);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border-soft);
             border-radius: var(--radius-lg);
         }
 
-        /* Global Contrast Fixes kawan */
-        .text-dark, .text-black { color: #e2e8f0 !important; }
-        .bg-white { background-color: rgba(255, 255, 255, 0.05) !important; color: #fff !important; }
 
         /* Custom Pagination (Premium Glassmorphism) */
         .pagination { gap: 8px; border: none; margin-bottom: 0; }
@@ -321,8 +325,8 @@
 
         /* Select2 Premium Dark Theme Global kawan */
         .select2-container--default .select2-selection--single {
-            background-color: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            background-color: var(--bg-card) !important;
+            border: 1px solid var(--border-soft) !important;
             height: 44px !important;
             border-radius: 12px !important;
             display: flex !important;
@@ -330,7 +334,7 @@
             transition: all 0.3s ease;
         }
         .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #ffffff !important;
+            color: var(--text-main) !important;
             padding-left: 15px !important;
         }
         .select2-container--default .select2-selection--single .select2-selection__arrow {
@@ -338,7 +342,7 @@
             right: 10px !important;
         }
         .select2-container--default .select2-selection--single .select2-selection__arrow b {
-            border-color: rgba(255,255,255,0.5) transparent transparent transparent !important;
+            border-color: var(--text-muted) transparent transparent transparent !important;
         }
         
         /* THE ULTIMATE DARK OVERRIDE kawan */
@@ -392,6 +396,153 @@
             background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
         }
+        /* ===== JURUS PAMUNGKAS: ULTIMATE THEME ADAPTATION ===== */
+
+        /* --- LIGHT MODE: Semua text jadi HITAM --- */
+        [data-theme="light"] .text-white,
+        [data-theme="light"] .text-white-50,
+        [data-theme="light"] .text-light,
+        [data-theme="light"] .text-secondary:not(.btn *),
+        [data-theme="light"] .text-muted,
+        [data-theme="light"] label,
+        [data-theme="light"] .form-label,
+        [data-theme="light"] .card-body,
+        [data-theme="light"] .card-body *:not(.badge):not(.btn):not(.btn *):not(.text-success):not(.text-danger):not(.text-warning):not(.text-primary):not(.text-info),
+        [data-theme="light"] .modal-body,
+        [data-theme="light"] .modal-body *:not(.badge):not(.btn):not(.btn *):not(.text-success):not(.text-danger):not(.text-warning):not(.text-primary):not(.text-info),
+        [data-theme="light"] .table td,
+        [data-theme="light"] .table th,
+        [data-theme="light"] .table td *:not(.badge):not(.btn):not(.btn *):not(.text-success):not(.text-danger):not(.text-warning):not(.text-primary):not(.text-info),
+        [data-theme="light"] h1, [data-theme="light"] h2, [data-theme="light"] h3,
+        [data-theme="light"] h4, [data-theme="light"] h5, [data-theme="light"] h6,
+        [data-theme="light"] .fw-bold,
+        [data-theme="light"] .outfit,
+        [data-theme="light"] .navbar-top *:not(.btn):not(.btn *),
+        [data-theme="light"] .content-body,
+        [data-theme="light"] .dropdown-item {
+            color: var(--text-main) !important;
+        }
+
+        [data-theme="light"] .opacity-50, 
+        [data-theme="light"] .opacity-25, 
+        [data-theme="light"] .opacity-75 {
+            opacity: 1 !important;
+            color: var(--text-main) !important;
+        }
+
+        [data-theme="light"] .text-warning:not(.btn-warning *):not(.badge *) {
+            color: #b45309 !important;
+        }
+
+        [data-theme="light"] .border-white,
+        [data-theme="light"] .border-secondary {
+            border-color: var(--border-soft) !important;
+        }
+
+        [data-theme="light"] .bg-dark,
+        [data-theme="light"] .bg-black,
+        [data-theme="light"] .bg-secondary:not(.badge) {
+            background-color: var(--bg-card) !important;
+            color: var(--text-main) !important;
+        }
+
+        [data-theme="light"] .bg-white.bg-opacity-10,
+        [data-theme="light"] .bg-white.bg-opacity-5,
+        [data-theme="light"] .bg-black.bg-opacity-20,
+        [data-theme="light"] .bg-black.bg-opacity-25 {
+            background-color: rgba(0,0,0,0.04) !important;
+        }
+
+        [data-theme="light"] .nav-link {
+            color: var(--text-muted) !important;
+        }
+        [data-theme="light"] .nav-link:hover {
+            background: rgba(0,0,0,0.05) !important;
+            color: var(--primary) !important;
+        }
+        [data-theme="light"] .nav-link.active {
+            color: var(--primary) !important;
+        }
+
+        [data-theme="light"] .glass-panel {
+            background: rgba(0,0,0,0.03) !important;
+            border-color: var(--border-soft) !important;
+        }
+
+        [data-theme="light"] input::placeholder {
+            color: var(--text-muted) !important;
+            opacity: 0.6 !important;
+        }
+
+        [data-theme="light"] .form-control,
+        [data-theme="light"] .form-select {
+            background-color: #f1f5f9 !important;
+            color: var(--text-main) !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        [data-theme="light"] .table thead.bg-dark,
+        [data-theme="light"] .table thead {
+            background-color: #f1f5f9 !important;
+            color: var(--text-main) !important;
+        }
+
+        [data-theme="light"] .card-header {
+            background-color: rgba(0,0,0,0.02) !important;
+        }
+
+        [data-theme="light"] .badge:not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-primary):not(.bg-info) {
+            background-color: #e2e8f0 !important;
+            color: #475569 !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+
+        [data-theme="light"] .sidebar {
+            background: rgba(255,255,255,0.97) !important;
+            box-shadow: 5px 0 30px rgba(0,0,0,0.08) !important;
+        }
+
+        [data-theme="light"] .sidebar-header h5,
+        [data-theme="light"] .sidebar .nav-link span,
+        [data-theme="light"] .sidebar .user-panel .fw-bold {
+            color: var(--text-main) !important;
+        }
+
+        [data-theme="light"] .dropdown-menu-dark {
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        [data-theme="light"] .dropdown-menu-dark .dropdown-item {
+            color: #334155 !important;
+        }
+        [data-theme="light"] .dropdown-menu-dark .dropdown-item:hover {
+            background-color: #f1f5f9 !important;
+        }
+
+        [data-theme="light"] .modal-content {
+            background-color: #ffffff !important;
+        }
+
+        [data-theme="light"] .btn-close-white {
+            filter: none !important;
+        }
+
+        /* --- DARK MODE: Semua text jadi PUTIH --- */
+        [data-theme="dark"] .card-body,
+        [data-theme="dark"] .table td,
+        [data-theme="dark"] .table th,
+        [data-theme="dark"] .modal-body,
+        [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3,
+        [data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6 {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .form-control,
+        [data-theme="dark"] .form-select {
+            background-color: rgba(255,255,255,0.05) !important;
+            color: #f8fafc !important;
+            border-color: rgba(255,255,255,0.1) !important;
+        }
     </style>
 
 </head>
@@ -402,11 +553,15 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <i class="bi bi-rocket-takeoff-fill text-white fs-4"></i>
+                    @if(optional(auth()->user()->branch)->logo)
+                        <img src="{{ asset('storage/' . auth()->user()->branch->logo) }}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px;">
+                    @else
+                        <i class="bi bi-rocket-takeoff-fill text-white fs-4"></i>
+                    @endif
                 </div>
                 <div class="flex-grow-1">
-                    <h5 class="mb-0 fw-bold tracking-tight text-white">PROJEK TWO</h5>
-                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">Admin Dashboard</small>
+                    <h5 class="mb-0 fw-bold tracking-tight">{{ optional(auth()->user()->branch)->name ?? 'PROJEK TWO' }}</h5>
+                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{ optional(auth()->user()->branch)->code ?? 'Admin Dashboard' }}</small>
                 </div>
             </div>
             
@@ -429,7 +584,7 @@
         <div class="main-panel">
             <header class="navbar-top">
                 <div class="d-flex align-items-center gap-3">
-                    <button class="btn btn-link text-white p-0 d-lg-none" id="sidebar-toggle">
+                    <button class="btn btn-link p-0 d-lg-none" id="sidebar-toggle" style="color: var(--text-main);">
                         <i class="bi bi-list fs-3"></i>
                     </button>
                     <div class="d-none d-md-block">
@@ -445,13 +600,13 @@
                     @endif
 
                     <!-- Theme Toggle -->
-                    <button id="theme-toggle" class="btn btn-link text-white p-2 glass-panel d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <button id="theme-toggle" class="btn btn-link p-2 glass-panel d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; color: var(--text-main);">
                         <i id="theme-toggle-icon" class="bi bi-moon-stars-fill text-warning"></i>
                     </button>
                     
                     <div class="d-flex align-items-center gap-4">
                         <div class="text-end d-none d-sm-block">
-                            <div class="small fw-bold text-white">{{ Auth::user()->name }}</div>
+                            <div class="small fw-bold">{{ Auth::user()->name }}</div>
                             <div class="text-muted" style="font-size: 0.7rem;">{{ strtoupper(Auth::user()->role) }}</div>
                         </div>
                         <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #2563eb);">
@@ -466,6 +621,13 @@
                     <div class="alert alert-success border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center gap-3 p-3" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2) !important;">
                         <i class="bi bi-check-circle-fill text-success fs-4"></i>
                         <div class="text-success fw-medium">{{ session('success') }}</div>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center gap-3 p-3" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2) !important;">
+                        <i class="bi bi-exclamation-circle-fill text-danger fs-4"></i>
+                        <div class="text-danger fw-medium">{{ session('error') }}</div>
                     </div>
                 @endif
 

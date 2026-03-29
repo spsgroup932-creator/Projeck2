@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Traits\BelongsToBranch;
 
+use App\Traits\LogsActivity;
+
 class JobOrder extends Model
 {
-    use HasFactory, BelongsToBranch;
+    use HasFactory, BelongsToBranch, LogsActivity;
 
     protected $fillable = [
         'spj_number',
@@ -74,5 +76,10 @@ class JobOrder extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function checklists()
+    {
+        return $this->hasMany(UnitChecklist::class);
     }
 }

@@ -2,10 +2,13 @@
     <div class="bg-primary text-white me-3 d-flex align-items-center justify-content-center fw-bold rounded-circle shadow-sm" style="width: 38px; height: 38px; font-size: 0.9rem;">
         {{ substr(Auth::user()->name, 0, 1) }}
     </div>
-    <div class="info text-truncate">
+    <div class="info text-truncate flex-grow-1">
         <div class="fw-bold small text-truncate" style="color: var(--text-main);" title="{{ Auth::user()->name }}">{{ Auth::user()->name }}</div>
         <div class="text-muted text-uppercase" style="font-size: 0.6rem; font-weight: 700; letter-spacing: 0.5px;">{{ Auth::user()->role }}</div>
     </div>
+    <a href="{{ route('profile') }}" class="btn btn-sm btn-link p-1 text-muted hover-primary transition">
+        <i class="bi bi-gear-fill"></i>
+    </a>
 </div>
 
 <div class="px-3 mb-2 small text-muted text-uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">Main Navigation</div>
@@ -25,7 +28,7 @@
                     <ul class="nav flex-column ms-4 mt-1 gap-1">
                         @foreach($menu['sub'] as $subKey => $subMenu)
                             <li class="nav-item">
-                                <a href="{{ route($subMenu['route']) }}" class="nav-link py-1 {{ request()->routeIs($subMenu['route'].'*') ? 'active' : '' }}" style="font-size: 0.85rem;">
+                                <a href="{{ route($subMenu['route'], $subMenu['params'] ?? []) }}" class="nav-link py-1 {{ request()->routeIs($subMenu['route'].'*') && (isset($subMenu['params']) ? request('method') == $subMenu['params']['method'] : true) ? 'active' : '' }}" style="font-size: 0.85rem;">
                                     <i class="{{ $subMenu['icon'] }} me-2"></i>
                                     <span>{{ $subMenu['label'] }}</span>
                                 </a>

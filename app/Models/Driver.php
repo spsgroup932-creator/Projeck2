@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 use App\Traits\BelongsToBranch;
+use App\Traits\LogsActivity;
 
 class Driver extends Model
 {
-    use BelongsToBranch;
+    use HasFactory, BelongsToBranch, LogsActivity;
 
     protected $guarded = [];
 

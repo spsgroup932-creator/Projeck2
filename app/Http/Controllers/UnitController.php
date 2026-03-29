@@ -37,7 +37,7 @@ class UnitController extends Controller
         }
         unset($validated['document']);
 
-        $last = Unit::latest('id')->first();
+        $last = Unit::withoutGlobalScopes()->latest('id')->first();
         $number = $last ? (int)substr($last->unit_code, 5) + 1 : 1;
         $code = 'UNIT-' . str_pad($number, 4, '0', STR_PAD_LEFT);
 

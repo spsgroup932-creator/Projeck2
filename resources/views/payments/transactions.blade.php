@@ -1,17 +1,30 @@
 <x-app-layout>
     <div class="container-fluid py-4">
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <h2 class="fw-bold text-white outfit mb-1">Rekap Transaksi (Uang Masuk) kawan</h2>
-                <p class="text-white opacity-50 small mb-0">Total Pendapatan Terfilter: <span class="text-success fw-bold h5 ms-2">Rp {{ number_format($totalMoney, 0, ',', '.') }}</span></p>
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-5">
+                <h2 class="fw-bold text-white outfit mb-1">Laporan Transaksi kawan</h2>
+                <p class="text-white opacity-50 small mb-0">Rekapitulasi keuangan dari seluruh unit kawan.</p>
+            </div>
+            <div class="col-md-7 text-end">
+                <div class="btn-group p-1 bg-black bg-opacity-25 rounded-pill border border-white border-opacity-10 shadow-sm" role="tablist" id="transactionTabs">
+                    <button class="btn btn-warning rounded-pill px-3 fw-bold active transition shadow-sm btn-sm" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-pane" type="button" role="tab">
+                        SLIDE 1: SEMUA
+                    </button>
+                    <button class="btn btn-outline-warning border-0 rounded-pill px-3 fw-bold text-white transition ms-1 btn-sm" id="cash-tab" data-bs-toggle="tab" data-bs-target="#cash-pane" type="button" role="tab">
+                        SLIDE 2: CASH
+                    </button>
+                    <button class="btn btn-outline-warning border-0 rounded-pill px-3 fw-bold text-white transition ms-1 btn-sm" id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer-pane" type="button" role="tab">
+                        SLIDE 3: TRANSFER/CRIS
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Filter Bar -->
         <div class="glass-panel p-3 mb-4 rounded-4 shadow-sm border border-white border-opacity-10">
-            <form action="{{ route('payments.transactions') }}" method="GET" class="row g-2 align-items-end">
+            <form action="{{ route('payments.transactions') }}" method="GET" class="row g-2 align-items-end" id="filterForm">
                 <div class="col-md-3">
-                    <label class="text-white opacity-50 small fw-bold mb-1 outfit ms-2">FILTER CUSTOMER kawan</label>
+                    <label class="text-white opacity-50 small fw-bold mb-1 outfit ms-2 text-uppercase">Filter Customer</label>
                     <select name="customer_id" class="form-select select2-dark border-0 bg-dark text-white rounded-pill">
                         <option value="">-- Semua Customer --</option>
                         @foreach($customers as $c)
@@ -20,59 +33,91 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="text-white opacity-50 small fw-bold mb-1 outfit ms-2">DARI TANGGAL BAYAR</label>
-                    <input type="date" name="date_from" class="form-control glass-panel border-0 text-white rounded-pill" value="{{ request('date_from') }}">
+                    <label class="text-white opacity-50 small fw-bold mb-1 outfit ms-2 text-uppercase">Dari Tgl Bayar</label>
+                    <input type="date" name="date_from" class="form-control glass-panel border-0 text-white rounded-pill" value="{{ $date_from }}">
                 </div>
                 <div class="col-md-2">
-                    <label class="text-white opacity-50 small fw-bold mb-1 outfit ms-2">SAMPAI TANGGAL BAYAR</label>
-                    <input type="date" name="date_to" class="form-control glass-panel border-0 text-white rounded-pill" value="{{ request('date_to') }}">
+                    <label class="text-white opacity-50 small fw-bold mb-1 outfit ms-2 text-uppercase">Sampai Tgl Bayar</label>
+                    <input type="date" name="date_to" class="form-control glass-panel border-0 text-white rounded-pill" value="{{ $date_to }}">
                 </div>
                 <div class="col-md-3">
-                    <label class="text-white opacity-50 small fw-bold mb-1 outfit ms-2">CARI SPJ</label>
+                    <label class="text-white opacity-50 small fw-bold mb-1 outfit ms-2 text-uppercase">Cari SPJ</label>
                     <input type="text" name="search" class="form-control glass-panel border-0 text-white rounded-pill" placeholder="..." value="{{ request('search') }}">
                 </div>
                 <div class="col-md-2 text-end">
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2"><i class="bi bi-funnel me-1"></i> FILTER</button>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2 shadow-sm"><i class="bi bi-funnel me-1"></i> FILTER</button>
                 </div>
             </form>
         </div>
 
-        <!-- Spreadsheet Style Table -->
-        <div class="glass-panel rounded-4 overflow-hidden border border-white border-opacity-10 shadow-lg">
-            <div class="table-responsive">
-                <table class="table table-hover table-sm align-middle mb-0 text-white border-0">
-                    <thead class="bg-white bg-opacity-5">
-                        <tr class="text-white opacity-75 small uppercase outfit border-0">
-                            <th class="ps-3 py-3 border-0">Tanggal Bayar</th>
-                            <th class="border-0">No. SPJ</th>
-                            <th class="border-0">Customer</th>
-                            <th class="border-0">Metode</th>
-                            <th class="border-0 text-end pe-3">Nominal Masuk kawan</th>
-                        </tr>
-                    </thead>
-                    <tbody class="border-0 small">
-                        @forelse ($payments as $p)
-                        <tr class="border-bottom border-white border-opacity-5">
-                            <td class="ps-3 py-2 fw-medium outfit opacity-75">{{ date('d/m/y', strtotime($p->payment_date)) }}</td>
-                            <td class="fw-bold text-primary outfit">{{ $p->jobOrder->spj_number }}</td>
-                            <td class="fw-bold">{{ $p->jobOrder->customer->name }}</td>
-                            <td><span class="badge bg-white bg-opacity-10 text-white px-3 rounded-pill">{{ $p->payment_method }}</span></td>
-                            <td class="text-end pe-3 fw-bold text-success">Rp {{ number_format($p->amount, 0, ',', '.') }}</td>
-                        </tr>
-                        @empty
-                        <tr><td colspan="5" class="text-center py-5 text-white opacity-25 italic">Belum ada transaksi kawan.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+        <div class="tab-content border-0">
+            <!-- SLIDE 1: SEMUA -->
+            <div class="tab-pane fade show active" id="all-pane" role="tabpanel">
+                @include('payments.partials.transaction_slide', [
+                    'payments' => $allPayments, 
+                    'total' => $totalAll, 
+                    'method' => '', 
+                    'title' => 'KESELURUHAN',
+                    'color' => 'success'
+                ])
+            </div>
+
+            <!-- SLIDE 2: CASH -->
+            <div class="tab-pane fade" id="cash-pane" role="tabpanel">
+                @include('payments.partials.transaction_slide', [
+                    'payments' => $cashPayments, 
+                    'total' => $totalCash, 
+                    'method' => 'CASH', 
+                    'title' => 'TUNAI (CASH)',
+                    'color' => 'warning'
+                ])
+            </div>
+
+            <!-- SLIDE 3: TRANSFER/CRIS -->
+            <div class="tab-pane fade" id="transfer-pane" role="tabpanel">
+                @include('payments.partials.transaction_slide', [
+                    'payments' => $transferPayments, 
+                    'total' => $totalTransfer, 
+                    'method' => 'Transfer', 
+                    'title' => 'TRANSFER / CRIS',
+                    'color' => 'info'
+                ])
             </div>
         </div>
-
-        @if($payments->hasPages())
-        <div class="mt-4">
-            {{ $payments->links() }}
-        </div>
-        @endif
     </div>
+
+    @push('css')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        .nav-link.active {
+            background-color: var(--warning) !important;
+            color: black !important;
+        }
+        .btn-group .btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-group .btn-outline-warning:hover {
+            background-color: rgba(255, 193, 7, 0.1);
+        }
+        .tab-pane.fade {
+            transition: opacity 0.3s linear, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(0.98);
+        }
+        .tab-pane.show.active {
+            transform: scale(1);
+        }
+        .hover-bg-light:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .trans-slide {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    @endpush
 
     @push('js')
     <script>
@@ -83,7 +128,28 @@
                 theme: 'bootstrap-5',
                 dropdownCssClass: "select2-dark-dropdown"
             });
+
+            // Handle Tab Toggle Buttons Styling
+            const tabs = ['all', 'cash', 'transfer'];
+            tabs.forEach(tab => {
+                $(`#${tab}-tab`).on('click', function() {
+                    tabs.forEach(t => {
+                        $(`#${t}-tab`).removeClass('btn-warning text-dark').addClass('btn-outline-warning text-white');
+                    });
+                    $(this).removeClass('btn-outline-warning text-white').addClass('btn-warning text-dark');
+                });
+            });
         });
+
+        function exportData(format, method) {
+            const form = document.getElementById('filterForm');
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+            if(method) params.append('method', method);
+            
+            const url = format === 'pdf' ? "{{ route('payments.transactions.pdf') }}" : "{{ route('payments.transactions.excel') }}";
+            window.location.href = url + '?' + params.toString();
+        }
     </script>
     @endpush
 </x-app-layout>

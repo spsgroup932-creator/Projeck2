@@ -113,6 +113,10 @@
                                 <i class="bi bi-geo-alt-fill text-primary"></i> 
                                 <span class="line-clamp-2 opacity-75">{{ $branch->address ?? 'Alamat belum diset kawan.' }}</span>
                             </div>
+                            <div class="mt-3 pt-3 border-top border-white border-opacity-10 d-flex justify-content-between align-items-center">
+                                <span class="text-white-50 uppercase fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">Subscription</span>
+                                <span class="fw-bold text-primary">Rp {{ number_format($branch->subscription_amount ?? 0, 0, ',', '.') }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -150,8 +154,22 @@
                                         <label class="form-label opacity-75 small uppercase fw-bold">Slogan (Singkat)</label>
                                         <input type="text" name="description" class="form-control" value="{{ $branch->description }}" placeholder="Slogan marketing kawan...">
                                     </div>
+                                    <div class="col-12">
+                                        <label class="form-label opacity-75 small uppercase fw-bold text-primary">Biaya Langganan (Rp)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-white border-opacity-10 text-white">Rp</span>
+                                            <input type="number" name="subscription_amount" class="form-control fw-bold text-primary subscription-amount" value="{{ $branch->subscription_amount ?? 0 }}" id="edit_subscription_amount_{{ $branch->id }}">
+                                        </div>
+                                        <small class="text-white opacity-50 mt-1 d-block"><i class="bi bi-info-circle me-1"></i> Terhitung otomatis: 50.000 per fitur utama kawan.</small>
+                                    </div>
                                     <div class="col-12 mt-4">
-                                        <label class="form-label d-block mb-3 fw-bold outfit text-white opacity-50">Delegasi Fitur & Dashboard</label>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <label class="form-label mb-0 fw-bold outfit text-white opacity-50">Delegasi Fitur & Dashboard</label>
+                                            <div class="form-check form-switch bg-dark bg-opacity-25 px-3 py-1 rounded-pill border border-white border-opacity-10 transition hover-lift">
+                                                <input class="form-check-input select-all-checkbox" type="checkbox" id="selectAllEdit_{{ $branch->id }}" data-target="edit_modal_{{ $branch->id }}">
+                                                <label class="form-check-label text-primary small fw-bold ms-1" for="selectAllEdit_{{ $branch->id }}">Pilih Semua kawan</label>
+                                            </div>
+                                        </div>
                                         <div class="row g-3">
                                             @php
                                                 $allMenus = config('menus', []);
@@ -166,13 +184,20 @@
                                             <!-- Menus -->
                                             @foreach($allMenus as $key => $menu)
                                                 @if(!in_array($key, ['branches', 'users']))
+                                                @php
+                                                    $isMajor = true; // Sekarang semua fitur berbayar 50k kawan Arul!
+                                                @endphp
                                                 <div class="col-md-6">
-                                                    <div class="glass-panel p-2">
+                                                    <div class="glass-panel p-2 {{ $isMajor ? 'border-primary border-opacity-25 shadow-sm' : '' }}">
                                                         <div class="form-check form-switch mb-0">
-                                                            <input class="form-check-input" type="checkbox" name="accessible_menus[]" value="{{ $key }}" id="edit_menu_{{ $branch->id }}_{{ $key }}" 
+                                                            <input class="form-check-input feature-checkbox" type="checkbox" name="accessible_menus[]" value="{{ $key }}" 
+                                                                data-major="{{ $isMajor ? 'true' : 'false' }}"
+                                                                data-amount="50000"
+                                                                id="edit_menu_{{ $branch->id }}_{{ $key }}" 
                                                                 {{ in_array($key, $branchMenus) ? 'checked' : '' }}>
                                                             <label class="form-check-label text-white small" for="edit_menu_{{ $branch->id }}_{{ $key }}">
-                                                                <i class="{{ $menu['icon'] ?? 'bi bi-command' }} me-2 text-primary"></i> {{ $menu['label'] }}
+                                                                <i class="{{ $menu['icon'] ?? 'bi bi-command' }} me-2 {{ $isMajor ? 'text-warning' : 'text-primary' }}"></i> {{ $menu['label'] }}
+                                                                @if($isMajor) <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 ms-1" style="font-size: 0.6rem;">50k</span> @endif
                                                             </label>
                                                         </div>
                                                     </div>
@@ -219,6 +244,7 @@
                         <tr>
                             <th class="ps-4">Cabang Rental</th>
                             <th>Kode</th>
+                            <th>Tagihan Feature</th>
                             <th>Online Status</th>
                             <th class="text-center">Total Staff</th>
                             <th>Status</th>
@@ -240,6 +266,10 @@
                                 </div>
                             </td>
                             <td><span class="badge bg-white bg-opacity-10 text-white-50">#{{ $branch->code }}</span></td>
+                            <td>
+                                <span class="fw-bold text-primary">Rp {{ number_format($branch->subscription_amount ?? 0, 0, ',', '.') }}</span>
+                                <div class="text-white-50" style="font-size: 0.6rem;">Per bulan kawan</div>
+                            </td>
                             <td>
                                 @if($branch->online_users_count > 0)
                                     <span class="text-success small fw-bold"><i class="bi bi-circle-fill fs-xs me-1 small"></i> {{ $branch->online_users_count }} Online</span>
@@ -318,8 +348,23 @@
                                 <textarea name="address" class="form-control" rows="3" placeholder="Alamat lengkap kawan..."></textarea>
                             </div>
 
+                            <div class="col-12">
+                                <label class="form-label opacity-75 small uppercase fw-bold text-primary">Biaya Langganan (Rp)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-white border-opacity-10 text-white">Rp</span>
+                                    <input type="number" name="subscription_amount" class="form-control fw-bold text-primary subscription-amount" value="200000" id="add_subscription_amount">
+                                </div>
+                                <small class="text-white opacity-50 mt-1 d-block"><i class="bi bi-info-circle me-1"></i> Terhitung otomatis: 50.000 per fitur utama kawan.</small>
+                            </div>
+
                             <div class="col-12 mt-4">
-                                <label class="form-label d-block mb-3 fw-bold outfit text-white opacity-50">Delegasi Fitur & Dashboard</label>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="form-label mb-0 fw-bold outfit text-white opacity-50">Delegasi Fitur & Dashboard</label>
+                                    <div class="form-check form-switch bg-dark bg-opacity-25 px-3 py-1 rounded-pill border border-white border-opacity-10 transition hover-lift">
+                                        <input class="form-check-input select-all-checkbox" type="checkbox" id="selectAllAdd" data-target="add_modal">
+                                        <label class="form-check-label text-primary small fw-bold ms-1" for="selectAllAdd">Pilih Semua kawan</label>
+                                    </div>
+                                </div>
                                 <div class="row g-3">
                                     @php
                                         $allMenus = config('menus', []);
@@ -332,12 +377,18 @@
                                     
                                     @foreach($allMenus as $key => $menu)
                                         @if(!in_array($key, ['branches', 'users']))
+                                        @php
+                                            $isMajor = true;
+                                        @endphp
                                         <div class="col-md-6">
-                                            <div class="glass-panel p-2">
+                                            <div class="glass-panel p-2 {{ $isMajor ? 'border-primary border-opacity-25 shadow-sm' : '' }}">
                                                 <div class="form-check form-switch mb-0">
-                                                    <input class="form-check-input" type="checkbox" name="accessible_menus[]" value="{{ $key }}" id="add_menu_{{ $key }}" checked>
+                                                    <input class="form-check-input feature-checkbox" type="checkbox" name="accessible_menus[]" value="{{ $key }}" 
+                                                        data-major="{{ $isMajor ? 'true' : 'false' }}"
+                                                        data-amount="50000" id="add_menu_{{ $key }}" checked>
                                                     <label class="form-check-label text-white small" for="add_menu_{{ $key }}">
-                                                        <i class="{{ $menu['icon'] ?? 'bi bi-command' }} me-2 text-primary"></i> {{ $menu['label'] }}
+                                                        <i class="{{ $menu['icon'] ?? 'bi bi-command' }} me-2 {{ $isMajor ? 'text-warning' : 'text-primary' }}"></i> {{ $menu['label'] }}
+                                                        @if($isMajor) <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 ms-1" style="font-size: 0.6rem;">50k</span> @endif
                                                     </label>
                                                 </div>
                                             </div>
@@ -399,5 +450,37 @@
         vg?.addEventListener('click', () => { gv.style.display = 'flex'; tv.style.display = 'none'; vg.classList.add('active'); vt.classList.remove('active'); localStorage.setItem('branchView', 'grid'); });
         vt?.addEventListener('click', () => { gv.style.display = 'none'; tv.style.display = 'block'; vt.classList.add('active'); vg.classList.remove('active'); localStorage.setItem('branchView', 'list'); });
         if(localStorage.getItem('branchView') === 'list') vt?.click();
+
+        // Subprice logic kawan
+        document.querySelectorAll('.modal').forEach(modal => {
+            const checkboxes = modal.querySelectorAll('input[name="accessible_menus[]"]');
+            const selectAll = modal.querySelector('.select-all-checkbox');
+            const amountInput = modal.querySelector('.subscription-amount');
+
+            if (checkboxes.length && amountInput) {
+                const calculate = () => {
+                    let total = 0;
+                    checkboxes.forEach(cb => {
+                        if (cb.checked) {
+                            total += 50000;
+                        }
+                    });
+                    amountInput.value = total;
+                };
+
+                checkboxes.forEach(cb => cb.addEventListener('change', calculate));
+                
+                // Select All logic kawan
+                selectAll?.addEventListener('change', function() {
+                    checkboxes.forEach(cb => {
+                        cb.checked = this.checked;
+                    });
+                    calculate();
+                });
+
+                // Calculate on load kawan
+                calculate();
+            }
+        });
     </script>
 </x-app-layout>

@@ -14,9 +14,11 @@ return new class extends Migration
         $tables = ['users', 'customers', 'units', 'drivers', 'job_orders'];
 
         foreach ($tables as $table) {
-            Schema::table($table, function (Blueprint $tableBlueprint) {
-                $tableBlueprint->foreignId('branch_id')->nullable()->constrained()->onDelete('set null');
-            });
+            if (!Schema::hasColumn($table, 'branch_id')) {
+                Schema::table($table, function (Blueprint $tableBlueprint) {
+                    $tableBlueprint->foreignId('branch_id')->nullable()->constrained()->onDelete('set null');
+                });
+            }
         }
     }
 
