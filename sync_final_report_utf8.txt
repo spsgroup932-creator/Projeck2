@@ -1,0 +1,70 @@
+﻿Membangun struktur tabel di Supabase (PostgreSQL)...
+
+  Dropping all tables  416.37ms DONE
+
+   INFO  Preparing database.  
+
+  Creating migration table  217.93ms DONE
+
+   INFO  Running migrations.  
+
+  0001_01_01_000000_create_users_table  807.84ms DONE
+  0001_01_01_000001_create_cache_table  663.31ms DONE
+  0001_01_01_000002_create_jobs_table  648.87ms DONE
+  2026_03_26_062116_add_accessible_menus_to_users_table  145.05ms DONE
+  2026_03_26_080000_create_operational_tables  625.67ms DONE
+  2026_03_26_095958_create_job_orders_table  1s DONE
+  2026_03_26_102539_update_job_orders_for_closing  356.07ms DONE
+  2026_03_26_102558_create_job_order_payments_table  438.82ms DONE
+  2026_03_26_102602_create_job_order_claims_table  336.66ms DONE
+  2026_03_27_060817_create_branches_table  502.12ms DONE
+  2026_03_27_060931_add_branch_id_to_operational_tables  1s DONE
+  2026_03_27_062652_add_profile_fields_to_branches_table  330.52ms DONE
+  2026_03_27_091214_add_missing_fields_to_customers_table  520.74ms DONE
+  2026_03_27_130133_add_last_seen_at_to_users_table  382.39ms DONE
+  2026_03_27_142936_create_unit_maintenance_logs_table  336.28ms DONE
+  2026_03_27_143020_add_document_fields_to_units_table  334.48ms DONE
+  2026_03_27_143301_add_digital_signature_to_job_orders_table  146.27ms DONE
+  2026_03_27_144820_add_accessible_menus_to_branches_table  143.81ms DONE
+  2026_03_28_150137_add_extended_settings_to_branches_table  2s DONE
+  2026_03_28_151112_add_font_family_to_branches_table  156.68ms DONE
+  2026_03_28_151729_add_font_size_to_users_table  147.26ms DONE
+  2026_03_28_154128_add_billing_fields_to_branches_table  235.77ms DONE
+  2026_03_28_154157_create_system_settings_table  657.04ms DONE
+  2026_03_28_163005_add_qris_image_to_branches_table  139.36ms DONE
+  2026_03_29_011604_create_unit_checklists_table  381.56ms DONE
+  2026_03_29_081641_create_activity_logs_table  396.34ms DONE
+  2026_03_29_101913_add_branch_id_to_unit_checklists_table  486.03ms DONE
+  2026_03_29_110621_add_password_plain_to_users_table  138.90ms DONE
+  2026_03_29_122224_add_branch_id_to_payments_and_claims_table  589.97ms DONE
+  2026_03_29_134533_add_closing_columns_to_job_orders_table  454.84ms DONE
+  2026_04_01_025941_create_personal_access_tokens_table  413.53ms DONE
+
+
+Menyalin data dari MySQL Lokal ke Supabase PostgreSQL...
+Menyalin tabel: branches...
+  --> Sukses! 2 baris disalin ke branches.
+Menyalin tabel: users...
+  --> Sukses! 5 baris disalin ke users.
+Menyalin tabel: customers...
+  --> Sukses! 2 baris disalin ke customers.
+Menyalin tabel: drivers...
+  --> Sukses! 2 baris disalin ke drivers.
+Menyalin tabel: units...
+  --> Sukses! 2 baris disalin ke units.
+Menyalin tabel: system_settings...
+  --> Sukses! 3 baris disalin ke system_settings.
+Menyalin tabel: job_orders...
+  --> Sukses! 3 baris disalin ke job_orders.
+Menyalin tabel: job_order_payments...
+  --> Sukses! 3 baris disalin ke job_order_payments.
+Menyalin tabel: job_order_claims...
+  --> Kosong. Lewati job_order_claims.
+Menyalin tabel: unit_checklists...
+  --> Sukses! 2 baris disalin ke unit_checklists.
+Menyalin tabel: unit_maintenance_logs...
+  --> Kosong. Lewati unit_maintenance_logs.
+Menyalin tabel: activity_logs...
+  --> Sukses! 25 baris disalin ke activity_logs.
+
+Proses Sukses! Data lokal berhasil dikirimkan seluruhnya ke Supabase.
