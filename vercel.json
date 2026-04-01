@@ -3,7 +3,6 @@
     "functions": {
         "api/index.php": { "runtime": "vercel-php@0.7.1" }
     },
-    "outputDirectory": "public",
     "routes": [
         { "src": "/build/(.*)", "dest": "/public/build/$1" },
         { "src": "/(favicon.ico|manifest.json|robots.txt|sw.js|debug.php|icons/.*)", "dest": "/public/$1" },

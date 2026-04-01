@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('units', function (Blueprint $table) {
-            $table->date('stnk_expiry')->nullable();
-            $table->date('kir_expiry')->nullable();
-            $table->string('document_path')->nullable();
+            if (!Schema::hasColumn('units', 'stnk_expiry')) {
+                $table->date('stnk_expiry')->nullable();
+            }
+            if (!Schema::hasColumn('units', 'kir_expiry')) {
+                $table->date('kir_expiry')->nullable();
+            }
+            if (!Schema::hasColumn('units', 'document_path')) {
+                $table->string('document_path')->nullable();
+            }
         });
     }
 
