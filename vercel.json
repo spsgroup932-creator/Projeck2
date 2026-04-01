@@ -5,6 +5,10 @@
     "functions": {
         "api/index.php": { "runtime": "vercel-php@0.7.1" }
     },
+    "env": {
+        "VIEW_COMPILED_PATH": "/tmp",
+        "CACHE_STORE": "array"
+    },
     "routes": [
         { "src": "/build/(.*)", "dest": "/build/$1" },
         { "src": "/(favicon.ico|manifest.json|robots.txt|sw.js|debug.php|icons/.*)", "dest": "/$1" },
