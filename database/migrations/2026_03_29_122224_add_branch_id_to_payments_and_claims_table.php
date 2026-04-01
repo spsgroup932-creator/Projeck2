@@ -19,19 +19,21 @@ return new class extends Migration
             $table->foreignId('branch_id')->nullable()->constrained()->onDelete('set null');
         });
 
-        // Data Migration kawan
-        \Illuminate\Support\Facades\DB::statement("
-            UPDATE job_order_payments p 
-            JOIN job_orders j ON p.job_order_id = j.id
-            SET p.branch_id = j.branch_id
-            WHERE p.branch_id IS NULL
+        // Data Migration kawan - Database agnostic way
+        \Illuminate\Support\Facades\DB::update("
+            UPDATE job_order_payments 
+            SET branch_id = job_orders.branch_id 
+            FROM job_orders 
+            WHERE job_order_payments.job_order_id = job_orders.id 
+            AND job_order_payments.branch_id IS NULL
         ");
 
-        \Illuminate\Support\Facades\DB::statement("
-            UPDATE job_order_claims c 
-            JOIN job_orders j ON c.job_order_id = j.id
-            SET c.branch_id = j.branch_id
-            WHERE c.branch_id IS NULL
+        \Illuminate\Support\Facades\DB::update("
+            UPDATE job_order_claims 
+            SET branch_id = job_orders.branch_id 
+            FROM job_orders 
+            WHERE job_order_claims.job_order_id = job_orders.id 
+            AND job_order_claims.branch_id IS NULL
         ");
     }
 

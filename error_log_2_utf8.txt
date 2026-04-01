@@ -1,0 +1,23 @@
+﻿Membangun struktur tabel di Supabase (PostgreSQL)...
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block (Connection: supabase, Host: aws-1-ap-southeast-1.pooler.supabase.com, Port: 6543, Database: postgres, SQL: alter table "branches" add column "whatsapp_number" varchar(255) null)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:841
+    837Γûò             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
+    838Γûò                 ? UniqueConstraintViolationException::class
+    839Γûò                 : QueryException::class;
+    840Γûò 
+  Γ₧£ 841Γûò             $exception = new $exceptionType(
+    842Γûò                 $this->getNameWithReadWriteType(),
+    843Γûò                 $query,
+    844Γûò                 $this->prepareBindings($bindings),
+    845Γûò                 $e,
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:587
+      PDOException::("SQLSTATE[25P02]: In failed sql transaction: 7 ERROR:  current transaction is aborted, commands ignored until end of transaction block")
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:587
+      PDOStatement::execute()
+
