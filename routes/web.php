@@ -10,6 +10,7 @@ use App\Http\Controllers\DriverController;
 use App\Http\Controllers\JobOrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -96,5 +97,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('maintenance', \App\Http\Controllers\UnitMaintenanceController::class);
     
     // Placeholder untuk laporan
-    Route::get('/reports', function() { return '<h3>Halaman Laporan Bekerja!</h3>'; })->name('reports.index');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 });

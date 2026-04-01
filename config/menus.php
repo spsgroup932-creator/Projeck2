@@ -137,6 +137,11 @@ return [
         'route' => 'settings.rental',
         'icon' => 'bi bi-gear-fill',
     ],
+    'reports' => [
+        'label' => 'Analisis Bisnis',
+        'route' => 'reports.index',
+        'icon' => 'bi bi-graph-up-arrow',
+    ],
     'profile' => [
         'label' => 'Profil Saya',
         'route' => 'profile',
